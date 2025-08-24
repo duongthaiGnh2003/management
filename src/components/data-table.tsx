@@ -23,6 +23,15 @@ import {
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { Input } from "./ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import FormRegister from "./Form";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -35,6 +44,14 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [isOpenFormRegister, setIsOpenFormRegister] = useState<boolean>(false);
+  const handleOpenFormRegister = () => {
+    if (isOpenFormRegister) {
+      setIsOpenFormRegister(false);
+    } else {
+      setIsOpenFormRegister(true);
+    }
+  };
   const table = useReactTable({
     data,
     columns,
@@ -52,15 +69,32 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      <div className=" flex items-center justify-between">
+        <div className="flex items-center py-4">
+          <Input
+            placeholder="Filter emails..."
+            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("email")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
+
+        <Dialog open={isOpenFormRegister} onOpenChange={setIsOpenFormRegister}>
+          <DialogTrigger>
+            <div className=" py-2 px-4 bg-black rounded-[10px] hover:bg-[#2e2e2e] text-white cursor-pointer">
+              Add member
+            </div>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle />
+              <DialogDescription></DialogDescription>
+            </DialogHeader>
+            <FormRegister handleOpenFormRegister={handleOpenFormRegister} />
+          </DialogContent>
+        </Dialog>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -111,24 +145,6 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
       </div>
     </div>
   );
