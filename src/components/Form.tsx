@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -42,7 +41,7 @@ function FormRegister({
     handleSubmit,
     register,
     control,
-    formState: { errors, isLoading, isSubmitting },
+    formState: { errors },
   } = useForm<z.infer<typeof registerForm>>({
     resolver: zodResolver(registerForm),
     defaultValues: data && {
@@ -54,8 +53,11 @@ function FormRegister({
     },
   });
   const onSubmit = (dataForm: z.infer<typeof registerForm>) => {
-    !data && add(dataForm);
-    data && update(data.id, dataForm);
+    if (data) {
+      update(data.id, dataForm);
+    } else {
+      add(dataForm);
+    }
     handleOpenFormRegister();
   };
 
