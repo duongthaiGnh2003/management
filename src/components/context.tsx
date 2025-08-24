@@ -1,5 +1,12 @@
 "use client";
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { cs } from "zod/locales";
 
 export type MemberType = {
   id: string;
@@ -63,27 +70,47 @@ export const initArraydata: MemberType[] = [
 const MembersContext = createContext<Ctx | undefined>(undefined);
 
 export function MembersProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<MemberType[]>(initArraydata);
+  const [data, setData] = useState<MemberType[]>([]);
+
+  useEffect(() => {
+    const localData: string | null = window.localStorage.getItem("localData");
+    if (localData) {
+      setData(JSON.parse(localData) as MemberType[]);
+    } else {
+      setData(initArraydata);
+      window.localStorage.setItem("localData", JSON.stringify(initArraydata));
+    }
+  }, []);
 
   const add = useCallback((item: Omit<MemberType, "id">) => {
     setData((prev) => {
       const lastIdNum = prev.length ? Number(prev[prev.length - 1].id) : 0;
       const newId = String(isNaN(lastIdNum) ? prev.length + 1 : lastIdNum + 1);
+      window.localStorage.setItem(
+        "localData",
+        JSON.stringify([...prev, { id: newId, ...item }])
+      );
       return [...prev, { id: newId, ...item }];
     });
   }, []);
 
   const update = useCallback(
     (id: string, patch: Partial<Omit<MemberType, "id">>) => {
-      setData((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, ...patch } : m))
-      );
+      setData((prev) => {
+        const data = prev.map((m) => (m.id === id ? { ...m, ...patch } : m));
+        window.localStorage.setItem("localData", JSON.stringify(data));
+        return data;
+      });
     },
     []
   );
 
   const remove = useCallback((id: string) => {
-    setData((prev) => prev.filter((m) => m.id !== id));
+    setData((prev) => {
+      const data = prev.filter((m) => m.id !== id);
+      window.localStorage.setItem("localData", JSON.stringify(data));
+      return data;
+    });
   }, []);
 
   return (
